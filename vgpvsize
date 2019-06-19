@@ -1,0 +1,31 @@
+#!/usr/bin/ksh
+#Auth 	  : MX
+#Purpose  : Print every VG's disk size in EASY format
+#Platform : HPUX
+#Version  : 2.0
+#Update   : Amended to support PVG.
+#            Shifted KB -> GB inside the loop as higher values were misbehaving.
+#            Works on Legacy and Persistent device names.
+
+	echo "SI VG_Name Disk_Name Disk_Size" | awk '{
+			printf "%-4s %-20s %-23s %10s\n", $1, $2, $3,$4 ;
+		}'
+	printf "------------------------------------------------------------\n"
+	COUNT=1
+	for VGS in $(vgdisplay | awk -F / '/VG Name/{print $3}')
+        do
+            for disks in $( 
+				vgdisplay -v $VGS | \
+               grep -v 'Alternate Link' | \
+				awk '/PV Name/{ print $3}' | \
+				sort -t / -k 4  | \
+				uniq  )
+			do 
+			RAW="/dev/r$(echo $disks | awk -F / '{printf ("%s/%s",$3,$4); }')"
+			SIZE=$(expr $(diskinfo -b ${RAW}) / 1024 / 1024 )
+			echo "$COUNT $VGS  ${RAW} $SIZE "
+		done
+		COUNT=$(expr ${COUNT} + 1 )
+	done  | awk '{
+		printf "%-4s %-20s %-23s %7d GB\n", $1, $2, $3,$4 ;
+	}'

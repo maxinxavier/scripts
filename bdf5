@@ -1,0 +1,41 @@
+#!/usr/bin/sh
+
+###################################################################
+# This script prcoess the 'bdf' output and prints one line
+# per filesystem in GB format.
+#					Updated : MX 09/Jul/2015
+###################################################################
+
+/usr/bin/bdf $@ | awk '{
+	if (NF == 7) { 
+		lv=$1 ; 
+		tot="GBytes" ; 
+		used=$3 ; 
+		avail=$4 ; 
+		userper=$5 ; 
+		fs="Mounted on" ;
+		printf "%-43s %9s %9s %9s %5s %10s\n", lv, tot, used, avail, userper, fs ; 
+		printf "-------------------------------------------------------------------------------------------\n"
+		next
+	}
+	if (NF ==1)  { 
+		lv=$1 ; 
+		next 
+	}
+	if (NF == 5) { 
+		tot=$1/1024/1024 ; 
+		used=$2/1024/1024 ; 
+		avail=$3/1024/1024 ; 
+		userper=$4 ; 
+		fs=$5
+	}
+	else  { 
+		lv=$1 ; 
+		tot=$2/1024/1024 ; 
+		used=$3/1024/1024 ;
+           	avail=$4/1024/1024 ; 
+		userper=$5 ; 
+		fs=$6
+	}
+	printf "%-43s %9.2f %9.2f %9.2f %5s %-30s\n", lv, tot, used, avail, userper, fs
+}'

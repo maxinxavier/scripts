@@ -1,0 +1,26 @@
+#!/usr/bin/perl
+# Author : MX
+# Purpose : Report LUND ID to DISK relation 
+
+my $SYM, $LUNID, $DISK ;
+open FILE1, "pout.all" or die "Could not open file :$!\n" ;
+while (<FILE1>) {
+    if( m/(Symmetrix|CLARiiON|VNX) ID/ ) {  
+		chomp ;  
+		$SYM=$_ ;
+	} ; 
+    if( m/Logical/ ) { 
+		s/Logical device ID=// ; 
+		chomp ; 
+		$LUNID=$_ ;
+	} ; 
+    if ( m/Pseudo/) { 
+		s/Pseudo name=// ; 
+		chomp ; 
+		$DISK=$_ ;
+	} ; 
+    if ( m/^\s+$/){ 
+		print "$SYM \t $LUNID \t $DISK \n" ;
+	};
+}
+close (FILE1);
